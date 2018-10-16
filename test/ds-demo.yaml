@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      role: logstor
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: logstor
+    spec:
+      containers:
+      - name: redis
+        image: redis:4.0-alpine
+        ports:
+        - name:
+          containerPort: 6379
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: myapp-ds
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+      release: stable
+  template:
+    metadata:
+      labels:
+        app: nginx
+        release: stable
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14-alpine

@@ -1,0 +1,215 @@
+docker-ce:
+	配置文件：/etc/docker/daemon.json  (默认不存在)
+	
+docker镜像加速
+	docker cn
+	阿里云加速器
+	中国科技大学
+	
+	# cat daemon.json 
+	{
+		"registry-mirrors": ["https://registry.docker-cn.com"]
+	}
+
+	
+镜像导入导出
+	docker save
+	docker load
+
+
+# 不进入容器直接查看内容	
+docker run --name tinyweb1 --rm tinyhttpd:v0.1-1 cat /data/web/html/index.html
+
+
+2、dockerfile
+
+RUN			#制作容器时运行
+CMD			#启动容器时运行的命令
+ENTRYPOINT  #指定的命令 不会被容器启动时指定的命令覆盖
+
+3、私有仓库
+yum install docker-registry
+	docker-distribution
+	
+客户端允许不安全镜像仓库：
+# cat /etc/docker/daemon.json 
+{
+    "registry-mirrors": ["https://pzufkchk.mirror.aliyuncs.com","https://registry.docker-cn.com"],
+    "insecure-registries": ["172.16.8.20:5000"]
+}
+
+推送镜像到私有仓库
+1、打标签
+# docker tag myweb:v0.3-6 172.16.8.20:5000/myweb:v0.3-6    #ip可用域名替换
+2、push
+# docker push 172.16.8.20:5000/myweb:v0.3-6
+3、pull
+
+docker compose #docker单机编排工具
+harbor  私有镜像仓库管理平台	https://goharbor.io/
+	
+	
+	
+kubernetes:
+master/node
+	master: API Server, Scheduler, Controller-Manager
+	node: kubelet, docker,...
+Pod, Label, Label Selector
+
+	
+kubeadm
+	1、master，nodes：安装kubelet, kubeadm, docker
+	2、master: kubeadm init  
+	3、nodes：kubeadm join
+	
+yum install docker-ce kubelet kubeadm kubectl -y	
+
+kubeadm join 172.16.8.20:6443 --token sd13xp.gup6qh8jvh9h5mfn --discovery-token-ca-cert-hash sha256:b0dce08619ed52e4175216801ba0c6cd0679e37e13aa9eb4d850b75740392ec8
+
+kubeadm初始化Kubernetes集群
+
+安装：
+master/node
+
+1、配置kubernetes,docker-ce repo
+	cat /etc/yum.repos.d/kubernetes.repo 
+[kubernetes]
+name=Kubernetes Repo
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+gpgcheck=0
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+enabled=1
+
+2、安装服务
+	yum install docker-ce kubelet kubeadm kubectl -y    # kubectl node可以不装
+	
+3、修改/usr/lib/systemd/system/docker.service使用代理下载k8s镜像
+	# grep Environment /usr/lib/systemd/system/docker.service 
+Environment="HTTPS_PROXY=http://www.ik8s.io:10080"
+Environment="NO_PROXY=127.0.0.0/8,172.16.0.0/16"
+
+	systemctl daemon-reload
+	systemctl start docker
+	# docker info | grep Proxy
+HTTPS Proxy: http://www.ik8s.io:10080
+No Proxy: 127.0.0.0/8,172.16.0.0/16
+
+# 都需要为1
+cat /proc/sys/net/bridge/bridge-nf-call-ip6tables
+cat /proc/sys/net/bridge/bridge-nf-call-iptables
+
+
+4、修改kubelet配置关闭swap
+	# cat /etc/sysconfig/kubelet 
+KUBELET_EXTRA_ARGS="--fail-swap-on=false"
+
+KUBE_PROXY_MODE=ipvs
+
+	装载模块(lsmod, modprobe)
+	ip_vs, ip_vs_rr, ip_vs_wrr, ip_vs_sh, nf_conntrack_ipv4
+
+	systemctl enable kubelet docker
+
+master下操作：
+	# 初始化
+	kubeadm init --kubernetes-version=1.11.3 --pod-network-cidr=10.244.0.0/16 --service-cidr=10.96.0.0/12 --ignore-preflight-errors=Swap
+
+	初始化成功  Your Kubernetes master has initialized successfully!
+	加入节点的token及证书
+	kubeadm join 172.16.8.20:6443 --token sd13xp.gup6qh8jvh9h5mfn --discovery-token-ca-cert-hash sha256:b0dce08619ed52e4175216801ba0c6cd0679e37e13aa9eb4d850b75740392ec8
+
+	# 建议以普通用户身份执行
+	mkdir -p $HOME/.kube
+	cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+	# 查看集群状态
+	kubectl get cs（componentstatus）
+	# 查看节点状态
+	kubectl get nodes  # NotReady
+	
+	# 安装flannel		https://github.com/coreos/flannel
+	kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+	kubectl get nodes  # Ready
+	# 查看名称空间的pod
+	kubectl get pods -n kube-system
+
+node：
+	# node加入集群
+	kubeadm join 172.16.8.20:6443 --token sd13xp.gup6qh8jvh9h5mfn --discovery-token-ca-cert-hash sha256:b0dce08619ed52e4175216801ba0c6cd0679e37e13aa9eb4d850b75740392ec8 --ignore-preflight-errors=Swap
+
+	加入成功：This node has joined the cluster
+
+创建资源的方法：
+	apiserver仅接收JSON格式的资源定义；
+	yaml格式提供配置清单，apiserver可自动将其转为json格式，而后再提交；
+	
+大部分资源的配置清单：
+	apiVersion: group/version
+		$ kubectl api-versions
+
+	kind: 资源类别
+	
+	metadata：元数据
+		name
+		namespace
+		labels
+		annotations
+		
+		每个资源的引用PATH
+			/api/GROUP/VERSION/namespaces/NAMESPACE/TYPE/NAME
+			
+	spec: 期望的状态， disired state
+	
+	status: 当前状态， current status 
+
+
+Pod控制器：
+	ReplicationController:
+	ReplicaSet:
+	Deployment:
+	DaemonSet:     一个节点只运行一个服务，日志收集filebeat/logstash
+	Job:
+	Cronjob:
+	StatefulSet:
+
+Service
+	工作模式：userspace, iptables, ipvs
+		userspace: 1.1-
+		iptables: 1.10-
+		ipvs: 1.11+
+	类型：
+		ExternalName, ClusterIP(集群网络，外部不可达), NodePort(外部网络可达), and LoadBalancer
+		
+	
+Ingress-nginx:
+	将集群外部流量引用集群内
+	1、kubectl apply -f deploy-demo.yaml
+	2、kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+	3、kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/baremetal/service-nodeport.yaml
+	4、kubectl apply -f ingress-myapp.yaml
+	
+	
+configMap: 配置文件
+	kubectl create configmap --help
+	常用两种方式创建：
+    kubectl create configmap nginx-config --from-literal=nginx_port=8080 --from-literal=server_name=myapp.hongx.com
+	kubectl create configmap nginx-www --from-file=./www.conf
+	kubectl describe cm nginx-config	 
+	kubectl get cm
+	
+	# cat www.conf 
+server {
+	server_name myapp.hongx.com;
+	listen 80;
+	root /web/html;
+}
+
+	加密配置使用secret
+	kubectl create secret --help
+
+
+
+	
+	
+	

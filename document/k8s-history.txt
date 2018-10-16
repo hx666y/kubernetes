@@ -1,0 +1,32 @@
+
+  359  kubectl rollout history deployment myapp-deploy
+
+  362  kubectl patch deployment myapp-deploy -p '{"spec":{"replicas":2}}'
+  363  kubectl get rs -o wide
+
+  366  kubectl get deploy -o wide
+
+  373  kubectl rollout undo deployment myapp-deploy
+
+  376  kubectl describe deployment myapp-deploy
+
+  378  kubectl set image deployment myapp-deploy myapp=nginx:1.15-alpine && kubectl rollout pause deployment myapp-deploy
+
+  381  kubectl rollout resume deployment myapp-deploy
+  382  kubectl rollout status deployment myapp-deploy
+
+  386  kubectl rollout history deployment myapp-deploy
+  387  kubectl rollout undo deployment myapp-deploy --to-revision=3
+
+
+  391  kubectl explain ds.spec
+
+  416  kubectl get pods -o wide
+  417  kubectl get svc
+  418  kubectl expose deployment redis --port=6379
+  419  kubectl get svc
+
+  422  kubectl exec -it redis-5bd6fb5cd5-4ddhr -- /bin/sh
+
+  427  kubectl get daemonset -o wide
+  428  kubectl delete daemonsets myapp-ds

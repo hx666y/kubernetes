@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-configmap
+  namespace: default
+  annotations:
+    app.kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: myapp.hongx.com
+    http:
+      paths:
+      - path:
+        backend:
+          serviceName: svc-configmap
+          servicePort: 80

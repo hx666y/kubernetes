@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tengine-deployment
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: tengine
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        run: tengine
+    spec:
+      containers:
+      - image: tengine:v1
+        name: tengine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 30Mi

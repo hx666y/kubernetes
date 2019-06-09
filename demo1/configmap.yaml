@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfig
+  namespace: default
+data:
+  # example of a simple property defined using --from-literal
+  property.level: info
+  property.type: file
+  # example of a complex property defined using --from-file
+  property.file: |-
+    property.1=value-1
+    property.2=value-2
+    property.3=value-3
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-pod
+spec:
+  containers:
+    - name: busybox
+      image: busybox
+      command: [ "/bin/sh", "-c", "echo $(LEVEL) $(TYPE)" ]
+      env:
+        - name: LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: myconfig
+              key: property.level
+        - name: TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: myconfig
+              key: property.type
+  restartPolicy: Never
+
+

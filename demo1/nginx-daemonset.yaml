@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: DaemonSet 
+metadata:
+  name: agent 
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: agent 
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.0-alpine
+        ports:
+        - containerPort: 80

@@ -1,0 +1,21 @@
+/opt/etcd/bin/etcdctl --ca-file=/opt/etcd/ssl/ca.pem --cert-file=/opt/etcd/ssl/server.pem --key-file=/opt/etcd/ssl/server-key.pem --endpoints="https://172.16.8.20:2379,https://172.16.8.30:2379,https://172.16.8.40:2379" cluster-health
+
+
+
+--proxy-mode=IPVS
+--masquerade-all=true
+
+nodeSelector：
+	kubectl label node 172.16.8.30 env_role=dev
+
+kubectl create secret docker-registry myregistrykey --docker-server=DOCKER_REGISTRY_SERVER --docker-username=DOCKER_USER --docker-password=DOCKER_PASSWORD --docker-email=DOCKER_EMAIL	
+	
+kubectl get pods --show-labels
+
+rollback:
+	kubectl rollout history deployment nginx-deployment
+	kubectl rollout status deployment nginx-deployment
+	kubectl rollout undo deployment/nginx-deployment
+	kubectl rollout undo deployment/nginx-deployment --to-revision=2
+	
+kubectl create configmap game-config --from-file=./configmap/

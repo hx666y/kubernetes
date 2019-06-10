@@ -86,7 +86,7 @@ metadata:
     addonmanager.kubernetes.io/mode: Reconcile
     kubernetes.io/name: "CoreDNS"
 spec:
-  # replicas: not specified here:
+  #replicas: 2
   # 1. In order to make Addon Manager do not reconcile this replicas parameter.
   # 2. Default is 1.
   # 3. Will be tuned in real time if DNS horizontal auto-scaling is turned on.
@@ -111,9 +111,10 @@ spec:
           operator: "Exists"
       nodeSelector:
         beta.kubernetes.io/os: linux
+      #  sys_role: coredns
       containers:
       - name: coredns
-        image: coredns/coredns:1.3.1
+        image: coredns/coredns:1.5.0
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -183,7 +184,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: 10.254.0.10
+  clusterIP: 192.168.0.10 
   ports:
   - name: dns
     port: 53

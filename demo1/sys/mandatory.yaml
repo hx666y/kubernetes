@@ -186,7 +186,7 @@ subjects:
 ---
 
 apiVersion: apps/v1
-kind: DaemonSet 
+kind: Deployment
 metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
@@ -194,6 +194,7 @@ metadata:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: ingress-nginx
@@ -209,9 +210,11 @@ spec:
     spec:
       hostNetwork: true
       serviceAccountName: nginx-ingress-serviceaccount
+      #nodeSelector:
+      #  sys_role: ingress
       containers:
         - name: nginx-ingress-controller
-          image: lizhenliang/nginx-ingress-controller:0.20.0
+          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.24.1
           args:
             - /nginx-ingress-controller
             - --configmap=$(POD_NAMESPACE)/nginx-configuration

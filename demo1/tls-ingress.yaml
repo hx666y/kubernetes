@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: foo-443-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - example.foo.com
+    secretName: example-foo-com
+  rules:
+  - host: example.foo.com
+    http:
+      paths: 
+      - path: /
+        backend:
+          serviceName: nginx-service
+          servicePort: 80
+      - path: /foo
+        backend:
+          serviceName: nginx-service
+          servicePort: 80
+      - path: /bar
+        backend:
+          serviceName: tengine-service
+          servicePort: 80

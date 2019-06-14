@@ -1,0 +1,46 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: tomcat-java-demo
+  namespace: test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      project: www
+      app: java-demo
+  template:
+    metadata:
+      labels:
+        project: www
+        app: java-demo
+    spec:
+      imagePullSecrets:
+      - name: registry-pull-secret
+      containers:
+      - name: tomcat
+        image: reg.image.com/project/tomcat-demo:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0.1
+            memory: 200Mi
+          limits:
+            cpu: 0.3
+            memory: 500Mi
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 20

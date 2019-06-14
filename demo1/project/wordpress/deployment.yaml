@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: php-demo
+  namespace: wordpress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      project: www
+      app: php-demo
+  template:
+    metadata:
+      labels:
+        project: www
+        app: php-demo
+    spec:
+      imagePullSecrets:
+      - name: registry-pull-secret
+      containers:
+      - name: nginx-php 
+        image: reg.image.com/project/php-demo:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 0.5
+            memory: 256Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /index.html
+            port: 80
+          initialDelaySeconds: 6
+          timeoutSeconds: 20

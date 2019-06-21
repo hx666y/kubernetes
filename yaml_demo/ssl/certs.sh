@@ -1,3 +1,8 @@
+#!/bin/bash
+
+DOMAIN="example.foo.com"
+SECRET_NAME="example-foo-com"
+
 cat > ca-config.json <<EOF
 {
   "signing": {
@@ -38,9 +43,9 @@ EOF
 
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
 
-cat > example.foo.com-csr.json <<EOF
+cat > ${DOMAIN}-csr.json <<EOF
 {
-  "CN": "example.foo.com",
+  "CN": "${DOMAIN}",
   "hosts": [],
   "key": {
     "algo": "rsa",
@@ -56,6 +61,6 @@ cat > example.foo.com-csr.json <<EOF
 }
 EOF
 
-cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes example.foo.com-csr.json | cfssljson -bare example.foo.com 
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes ${DOMAIN}-csr.json | cfssljson -bare ${DOMAIN}
 
-kubectl create secret tls example-foo-com --cert=example.foo.com.pem --key=example.foo.com-key.pem
+kubectl create secret tls ${SECRET_NAME} --cert=${DOMAIN}.pem --key=${DOMAIN}-key.pem

@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: php-demo 
+  namespace: elk
+spec:
+  rules:
+    - host: php.foo.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: php-demo 
+            servicePort: 80
+

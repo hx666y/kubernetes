@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: elk  
+data:
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /usr/local/nginx/logs/access.log
+      fields:
+        type: nginx-access
+      fields_under_root: true
+
+    - type: log
+      paths:
+        - /usr/local/nginx/logs/error.log
+      fields:
+        type: nginx-error
+      fields_under_root: true
+
+    setup.ilm.enabled: false
+    #setup.ilm.rollover_alias: "nginx"
+    #setup.ilm.pattern: "{now/d}-000001" 
+    setup.template.name: "www-nginx"
+    setup.template.pattern: "www-nginx-*"
+
+    output.elasticsearch:
+      hosts: ["http://172.69.0.69:9200"]
+      index: "www-nginx-%{+yyyy.MM.dd}"

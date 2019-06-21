@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-demo
+  namespace: elk
+spec:
+  selector:
+    project: www
+    k8s-app: java-demo
+  ports:
+  - name: web
+    port: 80
+    targetPort: 8080
+#  type: NodePort

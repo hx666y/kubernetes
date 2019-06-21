@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tomcat-demo 
+  namespace: elk
+spec:
+  rules:
+    - host: java.foo.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: tomcat-demo 
+            servicePort: 80
+
